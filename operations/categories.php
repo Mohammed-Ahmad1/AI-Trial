@@ -63,7 +63,7 @@ $allCategories=ListAllCategories();
                 </a>
             </li>
             <li class="nav-item mt-0">
-                <a href="login.php" class="nav-link d-flex align-items-center text-danger">
+                <a href="../Team-project-php/login.php" class="nav-link d-flex align-items-center text-danger">
                     <i class="fas fa-sign-out-alt me-2"></i> Logout
                 </a>
             </li>

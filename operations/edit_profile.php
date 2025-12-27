@@ -88,7 +88,7 @@ $conn->close();
             <li class="nav-item mb-2"><a href="users.php" class="nav-link d-flex align-items-center"><i class="fas fa-users me-2"></i> Users</a></li>
             <li class="nav-item mb-2"><a href="admins.php" class="nav-link d-flex align-items-center"><i class="fas fa-user-shield me-2"></i> Admins</a></li>
             <li class="nav-item mb-2"><a href="edit_profile.php" class="nav-link d-flex align-items-center active"><i class="fas fa-user-edit me-2"></i> Edit Profile</a></li>
-            <li class="nav-item mt-0"><a href="login.php" class="nav-link d-flex align-items-center text-danger"><i class="fas fa-sign-out-alt me-2"></i> Logout</a></li>
+            <li class="nav-item mt-0"><a href="../Team-project-php/login.php" class="nav-link d-flex align-items-center text-danger"><i class="fas fa-sign-out-alt me-2"></i> Logout</a></li>
         </ul>
     </div>
 

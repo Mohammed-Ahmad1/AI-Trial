@@ -34,7 +34,7 @@ $totalOrders = count($orders);
             <li class="nav-item mb-2"><a href="users.php" class="nav-link d-flex align-items-center"><i class="fas fa-users me-2"></i> Users</a></li>
             <li class="nav-item mb-2"><a href="admins.php" class="nav-link d-flex align-items-center"><i class="fas fa-user-shield me-2"></i> Admins</a></li>
             <li class="nav-item mb-2"><a href="edit_profile.php" class="nav-link d-flex align-items-center"><i class="fas fa-user-edit me-2"></i> Edit Profile</a></li>
-            <li class="nav-item"><a href="login.php" class="nav-link text-danger"><i class="fas fa-sign-out-alt me-2"></i> Logout</a></li>
+            <li class="nav-item"><a href="../Team-project-php/login.php" class="nav-link text-danger"><i class="fas fa-sign-out-alt me-2"></i> Logout</a></li>
         </ul>
     </div>
 
@@ -45,15 +45,24 @@ $totalOrders = count($orders);
         <div class="card shadow-sm">
             <div class="card-header d-flex justify-content-between align-items-center">
                 <h5 class="mb-0">All Orders</h5>
+
+                <!-- 🔍 Search Bar (WIDER, SAME DESIGN) -->
                 <div class="d-flex">
-                    <input type="text" id="ordersSearch" class="form-control form-control-sm me-2" 
-                           placeholder="Search (name, email, phone, product…)" style="max-width: 250px;">
-                    <button class="btn btn-sm btn-outline-secondary me-2" onclick="document.getElementById('ordersSearch').focus();">
+                    <input 
+                        type="text" 
+                        id="ordersSearch" 
+                        class="form-control form-control-sm me-2"
+                        placeholder="Search (name, email, phone, product…)"
+                        style="width: 260px;"  >
+                    <button class="btn btn-sm btn-outline-secondary me-2">
                         <i class="fas fa-search"></i>
                     </button>
-                    <button class="btn btn-sm btn-outline-secondary"><i class="fas fa-ellipsis-v"></i></button>
+                    <button class="btn btn-sm btn-outline-secondary">
+                        <i class="fas fa-ellipsis-v"></i>
+                    </button>
                 </div>
             </div>
+
             <div class="card-body">
                 <div class="table-responsive">
                     <table class="table table-hover" id="ordersTable">
@@ -92,6 +101,19 @@ $totalOrders = count($orders);
             </div>
         </div>
     </div>
+
+    <!-- ✅ FILTER SCRIPT (NO DESIGN CHANGE) -->
+    <script>
+        document.getElementById('ordersSearch').addEventListener('keyup', function () {
+            const searchValue = this.value.toLowerCase();
+            const rows = document.querySelectorAll('#ordersTable tbody tr');
+
+            rows.forEach(row => {
+                const rowText = row.textContent.toLowerCase();
+                row.style.display = rowText.includes(searchValue) ? '' : 'none';
+            });
+        });
+    </script>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
