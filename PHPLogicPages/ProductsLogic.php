@@ -11,6 +11,7 @@ function GetNumberOfProducts() {
     $stmt->close(); $conn->close();
     return $total;
 }
+
 function ListAllProducts($start = 0, $limit = 50, $name = '', $category_id = '', $min_price = '', $max_price = '')
 {
     $conn = new mysqli(DB_SERVER, DB_USER, DB_PASS, DB_NAME);
@@ -23,10 +24,23 @@ function ListAllProducts($start = 0, $limit = 50, $name = '', $category_id = '',
             p.product_id,
             p.image,
             p.name AS ProductName,
-            p.price,
-            c.name AS CategoryName
+            p.price AS original_price,
+            c.name AS CategoryName,
+            d.discount_id,
+            d.discount_percent,
+            d.start_date,
+            d.end_date,
+            d.is_active,
+            CASE
+                WHEN d.discount_id IS NOT NULL 
+                     AND d.is_active = 1 
+                     AND CURDATE() BETWEEN d.start_date AND d.end_date
+                THEN p.price * (1 - d.discount_percent / 100)
+                ELSE p.price
+            END AS current_price
         FROM products p
         LEFT JOIN categories c ON p.category_id = c.category_id
+        LEFT JOIN discounts d ON p.product_id = d.product_id
         WHERE 1=1
     ";
 
@@ -70,6 +84,19 @@ function ListAllProducts($start = 0, $limit = 50, $name = '', $category_id = '',
     $products = [];
 
     while ($row = $result->fetch_assoc()) {
+        // Compute flags in PHP
+        $hasActiveDiscount = (
+            !empty($row['discount_id']) &&
+            $row['is_active'] == 1 &&
+            new DateTime() >= new DateTime($row['start_date']) &&
+            new DateTime() <= new DateTime($row['end_date'])
+        );
+
+        $row['has_active_discount'] = $hasActiveDiscount;
+        $row['discount_amount'] = $hasActiveDiscount 
+            ? $row['original_price'] - $row['current_price'] 
+            : 0;
+
         $products[] = $row;
     }
 
@@ -78,3 +105,4 @@ function ListAllProducts($start = 0, $limit = 50, $name = '', $category_id = '',
 
     return $products;
 }
+?>

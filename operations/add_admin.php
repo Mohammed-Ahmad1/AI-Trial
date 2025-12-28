@@ -2,14 +2,27 @@
 require_once __DIR__ . '/../PHPLogicPages/AdminsLogic.php';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $result = AddNewAdmin($_POST);
+    $password = $_POST['password'] ?? '';
+    $phone = $_POST['phone'] ?? '';
 
-    if ($result === true) {
-        header("Location: admins.php?success=Admin added successfully");
+    // PHP Validation
+    if (strlen($password) < 8) {
+        $error = "Password must be at least 8 characters long.";
+    } elseif (!preg_match('/^\d{10}$/', $phone)) {
+        $error = "Phone number must be exactly 10 digits.";
     } else {
-        header("Location: admins.php?error=" . urlencode($result));
+        $result = AddNewAdmin($_POST);
+        if ($result === true) {
+            header("Location: admins.php?success=Admin added successfully");
+        } else {
+            $error = $result;
+        }
     }
-    exit;
+
+    if (!empty($error)) {
+        header("Location: admins.php?error=" . urlencode($error));
+        exit;
+    }
 }
 ?>
 
@@ -42,19 +55,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
                 <div class="mb-3">
                     <label>Password</label>
-                    <input type="password" name="password" class="form-control" required>
+                    <input type="password" name="password" class="form-control" required minlength="8">
                 </div>
-<div class="row mb-3">
-    <div class="col-md-6">
-        <label>Phone</label>
-        <input type="text" name="phone" class="form-control">
-    </div>
 
-    <div class="col-md-6">
-        <label>Email</label>
-        <input type="email" name="email" class="form-control" required>
-    </div>
-</div>
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label>Phone</label>
+                        <input type="text" name="phone" class="form-control" pattern="\d{10}" title="Phone must be exactly 10 digits">
+                    </div>
+                    <div class="col-md-6">
+                        <label>Email</label>
+                        <input type="email" name="email" class="form-control" required>
+                    </div>
+                </div>
+
                 <button class="btn btn-success">Create Admin</button>
                 <a href="admins.php" class="btn btn-secondary">Cancel</a>
             </form>

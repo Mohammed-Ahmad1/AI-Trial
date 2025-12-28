@@ -3,12 +3,13 @@ require_once __DIR__ . '/../PHPLogicPages/ProductsLogic.php';
 require_once __DIR__ . '/../PHPLogicPages/CategoriesLogic.php';
 
 /* Filters */
-$name      = $_GET['name'] ?? '';
-$category  = $_GET['category'] ?? '';
-$min_price = $_GET['min_price'] ?? '';
-$max_price = $_GET['max_price'] ?? '';
+$name         = $_GET['name'] ?? '';
+$category     = $_GET['category'] ?? '';
+$min_price    = $_GET['min_price'] ?? '';
+$max_price    = $_GET['max_price'] ?? '';
+$has_discount = isset($_GET['has_discount']) ? true : false; // ✅ NEW
 
-$products   = ListAllProducts(0, 50, $name, $category, $min_price, $max_price);
+$products   = ListAllProducts(0, 50, $name, $category, $min_price, $max_price, $has_discount);
 $categories = ListAllCategories();
 ?>
 
@@ -30,7 +31,7 @@ $categories = ListAllCategories();
 </head>
 <body>
 
-<!-- Sidebar (UNCHANGED) -->
+<!-- Sidebar -->
 <div class="sidebar bg-light p-3 vh-100 position-fixed">
     <div class="d-flex align-items-center mb-4">
         <i class="fas fa-store fa-2x me-2 text-success"></i>
@@ -40,8 +41,8 @@ $categories = ListAllCategories();
     <ul class="nav flex-column">
         <li class="nav-item mb-2"><a href="dashboard.php" class="nav-link"><i class="fas fa-home me-2"></i> Home</a></li>
         <li class="nav-item mb-2"><a href="orders.php" class="nav-link"><i class="fas fa-box me-2"></i> Orders</a></li>
-        <li class="nav-item mb-2"><a href="products.php" class="nav-link active"><i class="fas fa-tag me-2"></i> Product</a></li>
-        <li class="nav-item mb-2"><a href="categories.php" class="nav-link"><i class="fas fa-folder me-2"></i> Category</a></li>
+        <li class="nav-item mb-2"><a href="products.php" class="nav-link active"><i class="fas fa-tag me-2"></i> Products</a></li>
+        <li class="nav-item mb-2"><a href="categories.php" class="nav-link"><i class="fas fa-folder me-2"></i> Categories</a></li>
         <li class="nav-item mb-2"><a href="users.php" class="nav-link"><i class="fas fa-users me-2"></i> Users</a></li>
         <li class="nav-item mb-2"><a href="admins.php" class="nav-link"><i class="fas fa-user-shield me-2"></i> Admins</a></li>
         <li class="nav-item mb-2"><a href="edit_profile.php" class="nav-link"><i class="fas fa-user-edit me-2"></i> Edit Profile</a></li>
@@ -59,7 +60,7 @@ $categories = ListAllCategories();
     </a>
 </div>
 
-<!-- 🔍 FILTER BAR (ADDED – DESIGN SAFE) -->
+<!-- 🔍 Filter Bar -->
 <form method="GET" class="row g-2 mb-3">
     <div class="col-md-3">
         <input type="text" name="name" class="form-control"
@@ -91,8 +92,16 @@ $categories = ListAllCategories();
                value="<?= htmlspecialchars($max_price) ?>">
     </div>
 
-    <div class="col-md-2">
-        <button class="btn btn-primary w-100">
+    <!-- ✅ NEW FILTER: Discount Toggle -->
+    <div class="col-md-2 d-flex align-items-end">
+        <div class="form-check me-3">
+            <input class="form-check-input" type="checkbox" id="has_discount" name="has_discount" value="1"
+                <?= $has_discount ? 'checked' : '' ?>>
+            <label class="form-check-label small" for="has_discount">
+                On Sale Only
+            </label>
+        </div>
+        <button type="submit" class="btn btn-primary">
             <i class="fas fa-search"></i> Filter
         </button>
     </div>
@@ -100,7 +109,7 @@ $categories = ListAllCategories();
 
 <div class="card shadow-sm">
 <div class="card-body table-responsive">
-<table class="table table-hover">
+<table class="table table-hover align-middle">
 <thead>
 <tr>
     <th>ID</th>
@@ -114,29 +123,59 @@ $categories = ListAllCategories();
 <tbody>
 
 <?php if (!empty($products)): ?>
-<?php foreach ($products as $p): ?>
-<tr>
-    <td><?= $p['product_id'] ?></td>
-    <td><img src="<?= htmlspecialchars($p['image']) ?>" width="40" class="rounded"></td>
-    <td><?= htmlspecialchars($p['ProductName']) ?></td>
-    <td>JD<?= number_format($p['price'], 2) ?></td>
-    <td><?= htmlspecialchars($p['CategoryName']) ?></td>
-    <td>
-        <a href="edit_product.php?id=<?= $p['product_id'] ?>" class="btn btn-sm btn-primary">
-            <i class="fas fa-edit"></i>
-        </a>
-        <form method="POST" action="delete_product.php" style="display:inline"
-              onsubmit="return confirm('Delete this product?');">
-            <input type="hidden" name="product_id" value="<?= $p['product_id'] ?>">
-            <button class="btn btn-sm btn-danger">
-                <i class="fas fa-trash"></i>
-            </button>
-        </form>
-    </td>
-</tr>
-<?php endforeach; ?>
+    <?php foreach ($products as $p): ?>
+    <tr>
+        <td><?= $p['product_id'] ?></td>
+        <td><img src="<?= htmlspecialchars($p['image']) ?>" width="40" class="rounded"></td>
+        <td><?= htmlspecialchars($p['ProductName']) ?></td>
+        <td>
+            <?php if ($p['has_active_discount']): ?>
+                <span class="text-decoration-line-through text-muted">
+                    JD<?= number_format($p['original_price'], 2) ?>
+                </span>
+                <br>
+                <strong class="text-success">JD<?= number_format($p['current_price'], 2) ?></strong>
+                <span class="badge bg-danger ms-1">-<?= number_format($p['discount_percent'], 1) ?>%</span>
+            <?php else: ?>
+                JD<?= number_format($p['original_price'], 2) ?>
+            <?php endif; ?>
+        </td>
+        <td><?= htmlspecialchars($p['CategoryName']) ?></td>
+        <td class="d-flex gap-1">
+            <!-- Edit Product -->
+            <a href="edit_product.php?id=<?= $p['product_id'] ?>" 
+               class="btn btn-sm btn-primary" title="Edit Product">
+                <i class="fas fa-edit"></i>
+            </a>
+
+            <!-- ✅ SMART DISCOUNT BUTTON -->
+            <?php if ($p['has_active_discount']): ?>
+                <a href="edit_discount.php?discount_id=<?= $p['discount_id'] ?>&product_id=<?= $p['product_id'] ?>" 
+                   class="btn btn-sm btn-info" 
+                   title="Edit Discount: <?= number_format($p['discount_percent'], 1) ?>% off">
+                    <i class="fas fa-percent"></i>
+                    <span class="badge bg-light text-dark ms-1"><?= number_format($p['discount_percent'], 0) ?>%</span>
+                </a>
+            <?php else: ?>
+                <a href="add_discount.php?product_id=<?= $p['product_id'] ?>" 
+                   class="btn btn-sm btn-warning" title="Add Discount">
+                    <i class="fas fa-percent"></i>
+                </a>
+            <?php endif; ?>
+
+            <!-- Delete Product -->
+            <form method="POST" action="delete_product.php" style="display:inline"
+                  onsubmit="return confirm('Delete this product?');">
+                <input type="hidden" name="product_id" value="<?= $p['product_id'] ?>">
+                <button type="submit" class="btn btn-sm btn-danger" title="Delete Product">
+                    <i class="fas fa-trash"></i>
+                </button>
+            </form>
+        </td>
+    </tr>
+    <?php endforeach; ?>
 <?php else: ?>
-<tr><td colspan="6" class="text-center">No products found</td></tr>
+    <tr><td colspan="6" class="text-center">No products found</td></tr>
 <?php endif; ?>
 
 </tbody>

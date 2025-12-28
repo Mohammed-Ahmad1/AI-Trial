@@ -1,9 +1,9 @@
 <?php
 require_once __DIR__ . '/../includes/config.php';
-require_once __DIR__ . '/../PHPLogicPages/ProductsLogic.php'; // Adjust path if needed
+require_once __DIR__ . '/../PHPLogicPages/ProductsLogic.php'; 
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['product_id'])) {
-    $product_id = (int) $_POST['product_id']; // cast to int for safety
+    $product_id = (int) $_POST['product_id']; 
 
     if (deleteProduct($product_id)) {
         header("Location: products.php");

@@ -32,7 +32,7 @@ foreach ($RecentOrders as $item) {
     $orders[$orderId]['total_price'] += $item['quantity'] * $item['price_at_purchase'];
 }
 
-// --- Daily Revenue ---
+// --- Daily Revenue (show each payment individually) ---
 $conn = new mysqli(DB_SERVER, DB_USER, DB_PASS, DB_NAME);
 if ($conn->connect_error) {
     die("Database connection failed: " . $conn->connect_error);
@@ -41,21 +41,19 @@ if ($conn->connect_error) {
 $showAll = isset($_GET['all']) && $_GET['all'] == 1;
 
 if (!$showAll) {
-    // Today revenue
+    // Today payments only
     $revenueSql = "
-        SELECT DATE(p.paid_at) AS day, SUM(p.amount) AS daily_total
+        SELECT p.paid_at AS date, p.amount
         FROM payments p
         WHERE DATE(p.paid_at) = CURDATE()
-        GROUP BY DATE(p.paid_at)
-        ORDER BY day DESC
+        ORDER BY p.paid_at DESC
     ";
 } else {
-    // All-time revenue
+    // All payments (all-time)
     $revenueSql = "
-        SELECT DATE(p.paid_at) AS day, SUM(p.amount) AS daily_total
+        SELECT p.paid_at AS date, p.amount
         FROM payments p
-        GROUP BY DATE(p.paid_at)
-        ORDER BY day DESC
+        ORDER BY p.paid_at DESC
     ";
 }
 
@@ -63,7 +61,10 @@ $revenueResult = $conn->query($revenueSql);
 $dailyRevenue = [];
 if ($revenueResult) {
     while ($row = $revenueResult->fetch_assoc()) {
-        $dailyRevenue[] = $row;
+        $dailyRevenue[] = [
+            'date' => $row['date'],
+            'amount' => $row['amount']
+        ];
     }
 }
 $conn->close();
@@ -164,16 +165,16 @@ $conn->close();
                 <table class="table table-hover">
                     <thead>
                         <tr>
-                            <th>Date</th>
-                            <th>Revenue</th>
+                            <th>Date & Time</th>
+                            <th>Amount (JD)</th>
                         </tr>
                     </thead>
                     <tbody>
                         <?php if (!empty($dailyRevenue)) : ?>
-                            <?php foreach ($dailyRevenue as $day) : ?>
+                            <?php foreach ($dailyRevenue as $payment) : ?>
                                 <tr>
-                                    <td><?= htmlspecialchars($day['day']) ?></td>
-                                    <td>JD<?= number_format($day['daily_total'], 2) ?></td>
+                                    <td><?= htmlspecialchars($payment['date']) ?></td>
+                                    <td>JD<?= number_format($payment['amount'], 2) ?></td>
                                 </tr>
                             <?php endforeach; ?>
                         <?php else : ?>

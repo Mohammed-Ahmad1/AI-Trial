@@ -46,7 +46,7 @@ $totalOrders = count($orders);
             <div class="card-header d-flex justify-content-between align-items-center">
                 <h5 class="mb-0">All Orders</h5>
 
-                <!-- 🔍 Search Bar (WIDER, SAME DESIGN) -->
+                <!--  Search Bar  -->
                 <div class="d-flex">
                     <input 
                         type="text" 
@@ -54,11 +54,8 @@ $totalOrders = count($orders);
                         class="form-control form-control-sm me-2"
                         placeholder="Search (name, email, phone, product…)"
                         style="width: 260px;"  >
-                    <button class="btn btn-sm btn-outline-secondary me-2">
+                    <button class="btn btn-sm btn-outline-secondary me-0">
                         <i class="fas fa-search"></i>
-                    </button>
-                    <button class="btn btn-sm btn-outline-secondary">
-                        <i class="fas fa-ellipsis-v"></i>
                     </button>
                 </div>
             </div>
@@ -102,7 +99,7 @@ $totalOrders = count($orders);
         </div>
     </div>
 
-    <!-- ✅ FILTER SCRIPT (NO DESIGN CHANGE) -->
+    <!-- FILTER SCRIPT (NO DESIGN CHANGE) -->
     <script>
         document.getElementById('ordersSearch').addEventListener('keyup', function () {
             const searchValue = this.value.toLowerCase();
